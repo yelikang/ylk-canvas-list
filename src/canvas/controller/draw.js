@@ -1,43 +1,60 @@
+import Store from '../store'
+import Option from './option'
 export default class Draw {
-    constructor(context) {
+    constructor(canvas, context, datas) {
+        this.canvas = canvas
         this.ctx = context
+        this.datas = datas
+
+        this.canvas.width = 200
+        // this.canvas.height = Store.defaultHeight * datas.length
+        this.canvas.parentElement.style.height = Store.defaultHeight * datas.length +'px'
+
     }
     start() {
-        const { ctx } = this
-        // 底色
-        ctx.fillStyle = 'green'
-        ctx.fillRect(0, 0, 100, 100)
+        Store.options = []
 
-        this._drawText()
-        this._drawBorder()
-    }
-    _drawBorder() {
-        const { ctx } = this
-        // 边框
-        ctx.lineWidth = 1
-        ctx.strokeStyle = 'black'
+        let positionY = 0
+        this.datas.forEach((item) => {
+            positionY += Store.defaultHeight
+            const newOption = new Option(item.label, item.value, positionY)
 
-        // 边框-顶部
-        ctx.beginPath()
-        ctx.moveTo(5, 5)
-        ctx.lineTo(80, 5)
+            // newOption.drawBorder(this.ctx)
+            // newOption.drawText(this.ctx)
+            Store.options.push(newOption)
+        })
 
-        // 边框-右边
-        ctx.lineTo(80, 40)
 
-        // 边框-底边
-        ctx.lineTo(5, 40)
+        const fiberTask = (list, oneNum = 500) => {
+            const signleTask = () => {
+                const currentList = list.splice(0, oneNum)
 
-        // 边框-左
-        ctx.lineTo(5, 5)
-        ctx.stroke()
-        ctx.closePath()
-    }
-    _drawText() {
-        const { ctx } = this
+                currentList.forEach((option) => {
+                    option.drawBorder(this.ctx)
+                    option.drawText(this.ctx)
+                })
+                if (list.length > 0) {
+                    idleCallBack(signleTask)
+                }
+            }
 
-        ctx.fillStyle = 'red'
-        ctx.font = '12px STheiti, SimHei'
-        ctx.fillText('选项1', 20, 20)
+            idleCallBack(signleTask)
+        }
+
+        const idleCallBack = (fn) => {
+            if (window.requestIdleCallback) {
+                window.requestIdleCallback(fn, {
+                    timeout: 200
+                })
+                return
+            }
+
+            setTimeout(() => {
+                fn.call()
+            }, 0)
+        }
+        fiberTask(Store.options)
+
+        
     }
 }
