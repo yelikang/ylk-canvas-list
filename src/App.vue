@@ -1,10 +1,16 @@
 <template>
-    <div class="app">app</div>
+    <div class="app">
+        <canvas-list></canvas-list>
+    </div>
 </template>
 
 <script>
+import CanvasList from './canvas/list'
 export default {
-    name: 'app'
+    name: 'app',
+    components:{
+        CanvasList
+    }
 }
 </script>
 <style lang="less" scoped>
